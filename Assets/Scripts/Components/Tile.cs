@@ -1,11 +1,10 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Components
 {
-    [Serializable]
     public class Tile : MonoBehaviour
     {
+        
         public Vector2Int Coords => _coords;
         public int ID => _id;
         [SerializeField] private Vector2Int _coords;
@@ -14,6 +13,11 @@ namespace Components
         public void Construct(Vector2Int coords)
         {
             _coords = coords;
+        }
+
+        private void OnMouseDown()
+        {
+            
         }
     }
 }

@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 42dd346b733da1c46b67bb6ee1332cbe, type: 3}
+    - target: {fileID: 948645340808692064, guid: 41b5fd73b30ec3d4db90ebc18fc1614c, type: 3}
+      propertyPath: _id
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1031763852876868624, guid: 41b5fd73b30ec3d4db90ebc18fc1614c, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 0.9700599
+      objectReference: {fileID: 0}
     - target: {fileID: 4298564109347808562, guid: 41b5fd73b30ec3d4db90ebc18fc1614c, type: 3}
       propertyPath: m_Name
       value: TileFish
