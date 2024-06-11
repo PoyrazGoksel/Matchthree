@@ -3072,11 +3072,14 @@ MonoBehaviour:
   - {fileID: 7149524400660833327, guid: 5374ced143087d84c907916304c0b77c, type: 3}
   - {fileID: 4449326010757001007, guid: 0a050ac7d41622248b8bea31423c792d, type: 3}
   - {fileID: 5667693011366091865, guid: ceca2dd5e3c394f4ebf5abee7e17d573, type: 3}
+  _gridSizeX: 10
+  _gridSizeY: 10
   _prefabIds: 00000000010000000200000003000000
   _gridBounds:
     m_Center: {x: 4.5, y: 4.5, z: 0}
     m_Extent: {x: 5, y: 4.98503, z: 0.1}
   _transform: {fileID: 702152215}
+  _tilesToMove: []
 --- !u!4 &702152215
 Transform:
   m_ObjectHideFlags: 0

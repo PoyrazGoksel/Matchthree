@@ -19,7 +19,6 @@ namespace Components
         private void OnGridLoaded(Bounds gridBounds)
         {
             _transform.position = gridBounds.center + (Vector3.back * 10f);
-            //_transform.X(_transform.position.x - EnvVar.TileHalfExtends);
             _camera.orthographicSize = gridBounds.extents.x * (1f / _camera.aspect);
         }
 

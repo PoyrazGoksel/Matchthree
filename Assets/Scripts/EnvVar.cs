@@ -1,4 +1,7 @@
-﻿public static class EnvVar
+﻿using Components;
+using UnityEngine.Events;
+
+public static class EnvVar
 {
     public const string LoginSceneName = "Login";
     public const string MainSceneName = "Main";

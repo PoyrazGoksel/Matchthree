@@ -7,7 +7,6 @@ using Extensions.Unity;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEngine;
-using UnityEngine.Events;
 using Zenject;
 
 namespace Components
@@ -21,8 +20,8 @@ namespace Components
         [OdinSerialize]
         private Tile[,] _grid;
         [SerializeField] private List<GameObject> _tilePrefabs;
-        private int _gridSizeX;
-        private int _gridSizeY;
+        [SerializeField] private int _gridSizeX;
+        [SerializeField] private int _gridSizeY;
         [SerializeField] private List<int> _prefabIds;
         [SerializeField] private Bounds _gridBounds;
         [SerializeField] private Transform _transform;
@@ -31,9 +30,31 @@ namespace Components
         private Vector3 _mouseUpPos;
         private List<Tile> _currMatchesDebug;
         public ITweenContainer TweenContainer{get;set;}
+        private List<MonoPool> _tilePoolsByPrefabID;
+        private MonoPool _tilePool0;
+        private MonoPool _tilePool1;
+        private MonoPool _tilePool2;
+        private MonoPool _tilePool3;
 
         private void Awake()
         {
+            _tilePoolsByPrefabID = new List<MonoPool>();
+            
+            for(int prefabId = 0; prefabId < _prefabIds.Count; prefabId ++)
+            {
+                MonoPool tilePool = new
+                (
+                    new MonoPoolData
+                    (
+                        _tilePrefabs[prefabId],
+                        10,
+                        _transform
+                    )
+                );
+                
+                _tilePoolsByPrefabID.Add(tilePool);
+            }
+
             TweenContainer = TweenContain.Install(this);
         }
 
@@ -59,15 +80,12 @@ namespace Components
             _mouseDownPos = dirVector;
         }
 
-        private bool CanMove(Vector2Int tileMoveCoord)
-        {
-            return _grid.IsInsideGrid(tileMoveCoord);
-        }
+        private bool CanMove(Vector2Int tileMoveCoord) => _grid.IsInsideGrid(tileMoveCoord);
 
         private bool HasMatch(Tile fromTile, Tile toTile, out List<Tile> matches)
         {
             bool hasMatches = false;
-            
+
             matches = _grid.GetMatchesY(toTile);
             matches.AddRange(_grid.GetMatchesX(toTile));
 
@@ -75,7 +93,7 @@ namespace Components
             matches.AddRange(_grid.GetMatchesX(fromTile));
 
             if(matches.Count > 2) hasMatches = true;
-            
+
             return hasMatches;
         }
 
@@ -95,27 +113,83 @@ namespace Components
                 if(! CanMove(tileMoveCoord)) return;
 
                 Tile toTile = _grid.Get(tileMoveCoord);
-                
+
                 _grid.Swap(_selectedTile, toTile);
 
                 if(! HasMatch(_selectedTile, toTile, out List<Tile> matches))
                 {
                     _grid.Swap(toTile, _selectedTile);
+
                     return;
                 }
-                
+
                 DoTileMoveAnim
                 (
                     _selectedTile,
                     toTile,
                     delegate
                     {
-                        matches.DoToAll(e => e.gameObject.Destroy());
+                        matches.DoToAll
+                        (
+                            e =>
+                            {
+                                _grid.Set(null, e.Coords);
+                                e.gameObject.Destroy();
+                            }
+                        );
+
+                        RainDownTiles();
                     }
                 );
-                
+
                 _currMatchesDebug = matches;
             }
+        }
+
+        private void RainDownTiles()
+        {
+            bool didDestroy = true;
+
+            List<Tile> tilesToMove = new();
+
+            for(int y = 0; y < _gridSizeY; y ++)
+            for(int x = 0; x < _gridSizeX; x ++)
+            {
+                Vector2Int thisCoord = new(x, y);
+                Tile thisTile = _grid.Get(thisCoord);
+
+                if(thisTile) continue;
+
+                int spawnPoint = _gridSizeY;
+
+                for(int y1 = y; y1 <= spawnPoint; y1 ++)
+                {
+                    if(y1 == spawnPoint)
+                    {
+                        MonoPool randomPool = _tilePoolsByPrefabID.Random();
+                        Tile newTile = randomPool.Request<Tile>();
+                        _grid.Set(newTile, thisCoord);
+                        tilesToMove.Add(newTile);
+                        break;
+                    }
+
+                    Vector2Int emptyCoords = new(x, y1);
+
+                    Tile mostTopTile = _grid.Get(emptyCoords);
+
+                    if(mostTopTile)
+                    {
+                        tilesToMove.Add(mostTopTile);
+                        _grid.Set(null, mostTopTile.Coords);
+                        _grid.Set(mostTopTile, thisCoord);
+
+                        break;
+                    }
+                }
+            }
+
+            foreach(Tile tile in tilesToMove)
+                tile.DoMove(_grid.CoordsToWorld(_transform, tile.Coords));
         }
 
         private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete)
@@ -125,10 +199,10 @@ namespace Components
             TweenContainer.AddedSeq.Append(fromTile.transform.DOMove(fromTileWorldPos, 1f));
             Vector3 toTileWorldPos = _grid.CoordsToWorld(_transform, toTile.Coords);
             TweenContainer.AddedSeq.Join(toTile.transform.DOMove(toTileWorldPos, 1f));
-            
+
             TweenContainer.AddedSeq.onComplete += onComplete;
         }
-        
+
         private void UnRegisterEvents()
         {
             InputEvents.MouseDownGrid -= OnMouseDownGrid;
