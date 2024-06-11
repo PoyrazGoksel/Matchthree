@@ -201,7 +201,7 @@ namespace Components
 
         private IEnumerator RainDownRoutine()
         {
-            for(int y = 0; y < _gridSizeY; y ++)
+            for(int y = 0; y < _gridSizeY; y ++) // TODO: Should start from first tile that we are moving
             {
                 for(int x = 0; x < _gridSizeX; x ++)
                 {
