@@ -14,6 +14,8 @@ namespace Components
 #if UNITY_EDITOR
         private Tile DrawTile(Rect rect, Tile tile)
         {
+            if(tile == false) return tile;
+            
             Texture2D preview = AssetPreview.GetAssetPreview(tile.gameObject);
             
             rect = rect.Padding(3);
@@ -32,6 +34,8 @@ namespace Components
             
             foreach(Tile tile in _currMatchesDebug)
             {
+                if(! tile) continue;
+
                 Gizmos.DrawWireCube(tile.transform.position, Vector3.one);
             }
         }
@@ -51,7 +55,7 @@ namespace Components
         [Button]
         private void CreateGrid(int sizeX, int sizeY)
         {
-            _prefabIds = new();
+            _prefabIds = new List<int>();
 
             for(int id = 0; id < _tilePrefabs.Count; id ++) _prefabIds.Add(id);
             

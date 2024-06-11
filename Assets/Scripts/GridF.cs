@@ -118,6 +118,11 @@ public static class GridF
             }
         }
 
+        if(matches.Count < 3)
+        {
+            matches.Clear();
+        }
+        
         return matches;
     }
 
@@ -148,6 +153,11 @@ public static class GridF
             }
         }
 
+        if(matches.Count < 3)
+        {
+            matches.Clear();
+        }
+        
         return matches;
     }
 
@@ -262,7 +272,7 @@ public static class GridF
         return tileAtCoord;
     }
 
-    public static void Switch(this Tile[,] thisGrid, Tile fromTile, Vector2Int toCoords)
+    public static void Swap(this Tile[,] thisGrid, Tile fromTile, Vector2Int toCoords)
     {
         Vector2Int fromCoords = fromTile.Coords;
         
@@ -270,7 +280,7 @@ public static class GridF
         thisGrid.Set(toTile, fromCoords);
     }
     
-    public static void Switch(this Tile[,] thisGrid, Tile fromTile, Tile toTile)
+    public static void Swap(this Tile[,] thisGrid, Tile fromTile, Tile toTile)
     {
         Vector2Int fromCoords = fromTile.Coords;
         Vector2Int toCoords = toTile.Coords;
