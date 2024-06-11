@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Components;
 using Extensions.System;
+using Extensions.Unity;
 using UnityEngine;
 
 public static class GridF
@@ -287,6 +288,13 @@ public static class GridF
         
         thisGrid.Set(fromTile, toCoords);
         thisGrid.Set(toTile, fromCoords);
+    }
+    
+    public static Vector3 CoordsToWorld(this Tile[,] thisGrid, Transform transform, Vector2Int coords)
+    {
+        Vector3 localPos = coords.ToVector3XY();
+
+        return transform.position + localPos;
     }
 }
 

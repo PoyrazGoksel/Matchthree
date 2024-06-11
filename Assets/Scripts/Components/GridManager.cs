@@ -25,6 +25,7 @@ namespace Components
         private int _gridSizeY;
         [SerializeField] private List<int> _prefabIds;
         [SerializeField] private Bounds _gridBounds;
+        [SerializeField] private Transform _transform;
         private Tile _selectedTile;
         private Vector3 _mouseDownPos;
         private Vector3 _mouseUpPos;
@@ -114,35 +115,20 @@ namespace Components
                 );
                 
                 _currMatchesDebug = matches;
-
-                Debug.DrawLine
-                (
-                    _mouseDownPos,
-                    _mouseUpPos,
-                    Color.blue,
-                    2f
-                );
             }
         }
 
         private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete)
         {
             TweenContainer.AddSequence = DOTween.Sequence();
-            Vector3 fromTileWorldPos = CoordsToWorld(fromTile.Coords);
+            Vector3 fromTileWorldPos = _grid.CoordsToWorld(_transform, fromTile.Coords);
             TweenContainer.AddedSeq.Append(fromTile.transform.DOMove(fromTileWorldPos, 1f));
-            Vector3 toTileWorldPos = CoordsToWorld(toTile.Coords);
+            Vector3 toTileWorldPos = _grid.CoordsToWorld(_transform, toTile.Coords);
             TweenContainer.AddedSeq.Join(toTile.transform.DOMove(toTileWorldPos, 1f));
             
             TweenContainer.AddedSeq.onComplete += onComplete;
         }
-
-        public Vector3 CoordsToWorld(Vector2Int coords)
-        {
-            Vector3 localPos = coords.ToVector3XY();
-
-            return transform.position + localPos;
-        }
-
+        
         private void UnRegisterEvents()
         {
             InputEvents.MouseDownGrid -= OnMouseDownGrid;
