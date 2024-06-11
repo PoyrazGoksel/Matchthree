@@ -22,6 +22,11 @@ namespace Components
             _coords = coord;
         }
 
+        public void Teleport(Vector3 worldPos)
+        {
+            _transform.position = worldPos;
+        }
+
         void ICoordSet.SetCoord(int x, int y)
         {
             _coords = new Vector2Int(x, y);

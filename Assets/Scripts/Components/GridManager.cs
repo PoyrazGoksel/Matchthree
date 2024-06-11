@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
 using Events;
 using Extensions.DoTween;
@@ -35,6 +36,7 @@ namespace Components
         private MonoPool _tilePool1;
         private MonoPool _tilePool2;
         private MonoPool _tilePool3;
+        private Tile[,] _tilesToMove;
 
         private void Awake()
         {
@@ -150,7 +152,7 @@ namespace Components
         {
             bool didDestroy = true;
 
-            List<Tile> tilesToMove = new();
+            _tilesToMove = new Tile[_gridSizeX,_gridSizeY];
 
             for(int y = 0; y < _gridSizeY; y ++)
             for(int x = 0; x < _gridSizeX; x ++)
@@ -168,8 +170,13 @@ namespace Components
                     {
                         MonoPool randomPool = _tilePoolsByPrefabID.Random();
                         Tile newTile = randomPool.Request<Tile>();
+                        
+                        Vector3 spawnWorldPos = _grid.CoordsToWorld(_transform, new Vector2Int(x, spawnPoint));
+                        newTile.Teleport(spawnWorldPos);
+                        
                         _grid.Set(newTile, thisCoord);
-                        tilesToMove.Add(newTile);
+                        
+                        _tilesToMove[thisCoord.x, thisCoord.y] = newTile;
                         break;
                     }
 
@@ -179,17 +186,34 @@ namespace Components
 
                     if(mostTopTile)
                     {
-                        tilesToMove.Add(mostTopTile);
                         _grid.Set(null, mostTopTile.Coords);
                         _grid.Set(mostTopTile, thisCoord);
+                        
+                        _tilesToMove[thisCoord.x, thisCoord.y] = mostTopTile;
 
                         break;
                     }
                 }
             }
 
-            foreach(Tile tile in tilesToMove)
-                tile.DoMove(_grid.CoordsToWorld(_transform, tile.Coords));
+            StartCoroutine(RainDownRoutine());
+        }
+
+        private IEnumerator RainDownRoutine()
+        {
+            for(int y = 0; y < _gridSizeY; y ++)
+            {
+                for(int x = 0; x < _gridSizeX; x ++)
+                {
+                    Tile thisTile = _tilesToMove[x, y];
+
+                    if(thisTile == false) continue;
+
+                    thisTile.DoMove(_grid.CoordsToWorld(_transform, thisTile.Coords));
+                }
+
+                yield return new WaitForSecondsRealtime(0.1f);
+            }
         }
 
         private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete)
