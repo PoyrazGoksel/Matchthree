@@ -70,82 +70,145 @@ namespace Components
             TweenContainer.Clear();
         }
 
-        private void RegisterEvents()
-        {
-            InputEvents.MouseDownGrid += OnMouseDownGrid;
-            InputEvents.MouseUpGrid += OnMouseUpGrid;
-        }
-
-        private void OnMouseDownGrid(Tile clickedTile, Vector3 dirVector)
-        {
-            _selectedTile = clickedTile;
-            _mouseDownPos = dirVector;
-        }
-
         private bool CanMove(Vector2Int tileMoveCoord) => _grid.IsInsideGrid(tileMoveCoord);
 
         private bool HasMatch(Tile fromTile, Tile toTile, out List<Tile> matches)
         {
             bool hasMatches = false;
 
-            matches = _grid.GetMatchesY(toTile);
-            matches.AddRange(_grid.GetMatchesX(toTile));
+            matches = _grid.GetMatchesYAll(toTile);
+            matches.AddRange(_grid.GetMatchesXAll(toTile));
 
-            matches.AddRange(_grid.GetMatchesY(fromTile));
-            matches.AddRange(_grid.GetMatchesX(fromTile));
+            matches.AddRange(_grid.GetMatchesYAll(fromTile));
+            matches.AddRange(_grid.GetMatchesXAll(fromTile));
 
             if(matches.Count > 2) hasMatches = true;
 
             return hasMatches;
         }
 
+        private bool IsGameOver(out Tile hintTile, out GridDir hintDir)
+        {
+            hintDir = GridDir.Null;
+            hintTile = null;
+            
+            List<Tile> matches = new();
+            
+            foreach(Tile fromTile in _grid)
+            {
+                bool isPearl = false;
+
+                hintTile = fromTile;
+
+                if(hintTile.Coords == new Vector2Int(1, 0))
+                {
+                    Debug.LogWarning("Break");
+                    isPearl = true;
+                }
+                
+                Vector2Int thisCoord = fromTile.Coords;
+
+                Vector2Int leftCoord = thisCoord + Vector2Int.left;
+                Vector2Int topCoord = thisCoord + Vector2Int.up;
+                Vector2Int rightCoord = thisCoord + Vector2Int.right;
+                Vector2Int botCoord = thisCoord + Vector2Int.down;
+
+                if(_grid.IsInsideGrid(leftCoord))
+                {
+                    Tile toTile = _grid.Get(leftCoord);
+
+                    _grid.Swap(fromTile, toTile);
+
+                    matches = _grid.GetMatchesX(fromTile);
+                    matches.AddRange(_grid.GetMatchesY(fromTile, isPearl));
+
+                    if(isPearl)
+                    {
+                        Debug.LogWarning($"fromTile.Coords: {fromTile.Coords}, leftCoord {leftCoord}");
+                        Debug.LogWarning($"matches{matches.Count}");
+                    }
+
+                    _grid.Swap(toTile, fromTile);
+
+                    if(matches.Count > 0)
+                    {
+                        hintDir = GridDir.Left;
+                        return false;
+                    }
+                }
+                
+                if(_grid.IsInsideGrid(topCoord))
+                {
+                    if(isPearl)
+                    {
+                        Debug.LogWarning(topCoord);
+                    }
+                    Tile toTile = _grid.Get(topCoord);
+                    _grid.Swap(fromTile, toTile);
+
+                    matches = _grid.GetMatchesX(fromTile);
+                    matches.AddRange(_grid.GetMatchesY(fromTile));
+                    
+                    _grid.Swap(toTile, fromTile);
+                    
+                    if(matches.Count > 0)
+                    {
+                        hintDir = GridDir.Up;
+                        return false;
+                    }
+                }
+                
+                if(_grid.IsInsideGrid(rightCoord))
+                {
+                    if(isPearl) { Debug.LogWarning(rightCoord); }
+
+                    Tile toTile = _grid.Get(rightCoord);
+                    _grid.Swap(fromTile, toTile);
+
+                    matches = _grid.GetMatchesX(fromTile);
+                    matches.AddRange(_grid.GetMatchesY(fromTile));
+                    
+                    _grid.Swap(toTile, fromTile);
+                    
+                    if(matches.Count > 0)
+                    {
+                        hintDir = GridDir.Right;
+                        return false;
+                    }
+                }
+                
+                if(_grid.IsInsideGrid(botCoord))
+                {
+                    if(isPearl) { Debug.LogWarning(botCoord); }
+
+                    Tile toTile = _grid.Get(botCoord);
+                    _grid.Swap(fromTile, toTile);
+
+                    matches = _grid.GetMatchesX(fromTile);
+                    matches.AddRange(_grid.GetMatchesY(fromTile));
+                    
+                    _grid.Swap(toTile, fromTile);
+                    
+                    if(matches.Count > 0)
+                    {
+                        hintDir = GridDir.Down;
+                        return false;
+                    }
+                }
+            }
+
+            return matches.Count == 0;
+        }
+
         [Button]
         private void TestGridDir(Vector2 input) {Debug.LogWarning(GridF.GetGridDir(input));}
 
-        private void OnMouseUpGrid(Vector3 mouseUpPos)
+        [Button]
+        private void TestGameOver()
         {
-            _mouseUpPos = mouseUpPos;
+            bool isGameOver = IsGameOver(out Tile hintTile, out GridDir hintDir);
 
-            Vector3 dirVector = mouseUpPos - _mouseDownPos;
-
-            if(_selectedTile)
-            {
-                Vector2Int tileMoveCoord = _selectedTile.Coords + GridF.GetGridDirVector(dirVector);
-
-                if(! CanMove(tileMoveCoord)) return;
-
-                Tile toTile = _grid.Get(tileMoveCoord);
-
-                _grid.Swap(_selectedTile, toTile);
-
-                if(! HasMatch(_selectedTile, toTile, out List<Tile> matches))
-                {
-                    _grid.Swap(toTile, _selectedTile);
-
-                    return;
-                }
-
-                DoTileMoveAnim
-                (
-                    _selectedTile,
-                    toTile,
-                    delegate
-                    {
-                        matches.DoToAll
-                        (
-                            e =>
-                            {
-                                _grid.Set(null, e.Coords);
-                                e.gameObject.Destroy();
-                            }
-                        );
-
-                        RainDownTiles();
-                    }
-                );
-
-                _currMatchesDebug = matches;
-            }
+            Debug.LogWarning($"isGameOver: {isGameOver}, hintTile {hintTile}, hintDir {hintDir}", hintTile);
         }
 
         private void RainDownTiles()
@@ -225,6 +288,64 @@ namespace Components
             TweenContainer.AddedSeq.Join(toTile.transform.DOMove(toTileWorldPos, 1f));
 
             TweenContainer.AddedSeq.onComplete += onComplete;
+        }
+
+        private void RegisterEvents()
+        {
+            InputEvents.MouseDownGrid += OnMouseDownGrid;
+            InputEvents.MouseUpGrid += OnMouseUpGrid;
+        }
+
+        private void OnMouseDownGrid(Tile clickedTile, Vector3 dirVector)
+        {
+            _selectedTile = clickedTile;
+            _mouseDownPos = dirVector;
+        }
+
+        private void OnMouseUpGrid(Vector3 mouseUpPos)
+        {
+            _mouseUpPos = mouseUpPos;
+
+            Vector3 dirVector = mouseUpPos - _mouseDownPos;
+
+            if(_selectedTile)
+            {
+                Vector2Int tileMoveCoord = _selectedTile.Coords + GridF.GetGridDirVector(dirVector);
+
+                if(! CanMove(tileMoveCoord)) return;
+
+                Tile toTile = _grid.Get(tileMoveCoord);
+
+                _grid.Swap(_selectedTile, toTile);
+
+                if(! HasMatch(_selectedTile, toTile, out List<Tile> matches))
+                {
+                    _grid.Swap(toTile, _selectedTile);
+
+                    return;
+                }
+
+                DoTileMoveAnim
+                (
+                    _selectedTile,
+                    toTile,
+                    delegate
+                    {
+                        matches.DoToAll
+                        (
+                            e =>
+                            {
+                                _grid.Set(null, e.Coords);
+                                e.gameObject.Destroy();
+                            }
+                        );
+
+                        RainDownTiles();
+                    }
+                );
+
+                _currMatchesDebug = matches;
+            }
         }
 
         private void UnRegisterEvents()

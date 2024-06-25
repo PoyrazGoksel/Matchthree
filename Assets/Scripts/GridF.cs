@@ -119,12 +119,112 @@ public static class GridF
         
         return true;
     }
-    
+
+    public static List<Tile> GetMatchesY
+    (this Tile[,] thisGrid, Tile tile, bool test = false)
+        => GetMatchesY(thisGrid, tile.Coords, tile.ID, test);
+
+    public static List<Tile> GetMatchesY(this Tile[,] grid, Vector2Int coord, int prefabId, bool test = false)
+    {
+        Tile thisTile = grid.Get(coord);
+
+        List<Tile> matches = new();
+
+        int botMax = coord.y - MatchOffset;
+        int topMax = coord.y + MatchOffset + 1;
+
+        int gridLength = grid.GetLength(1);
+        int gridMin = 0;
+
+        if(botMax < gridMin) botMax = gridMin;
+        if(topMax > gridLength) topMax = gridLength;
+        
+        if(test)
+        {
+            Debug.LogWarning($"botMax {botMax}, topMax {topMax}");
+        }
+        
+        for(int y = botMax; y < topMax; y ++)
+        {
+            Tile currTile = grid[coord.x, y];
+
+            if(test)
+            {
+                Debug.LogWarning($"thisCoord {coord.x}, {y}");
+            }
+
+            if(currTile.ID == prefabId)
+            {
+                matches.Add(currTile);
+            }
+            else if(matches.Contains(thisTile) == false)
+            {
+                matches.Clear();
+            }
+            else if(matches.Contains(thisTile))
+            {
+                break;
+            }
+        }
+
+        if(matches.Count < 3)
+        {
+            matches.Clear();
+        }
+        
+        return matches;
+    }
+
     public static List<Tile> GetMatchesX
     (this Tile[,] thisGrid, Tile tile)
         => GetMatchesX(thisGrid, tile.Coords, tile.ID);
     
     public static List<Tile> GetMatchesX(this Tile[,] grid, Vector2Int coord, int prefabId)
+    {
+        Tile thisTile = grid.Get(coord);
+
+        List<Tile> matches = new();
+
+        int leftMax = coord.x - MatchOffset;
+        int rightMax = coord.x + MatchOffset + 1;
+
+        int gridLength = grid.GetLength(0);
+        int gridMin = 0;
+
+        if(leftMax < gridMin) leftMax = gridMin;
+        if(rightMax > gridLength) rightMax = gridLength;
+        
+        for(int x = leftMax; x < rightMax; x ++)
+        {
+            Tile currTile = grid[x, coord.y];
+
+            if(currTile.ID == prefabId)
+            {
+                matches.Add(currTile);
+            }
+            else if(matches.Contains(thisTile) == false)
+            {
+                matches.Clear();
+            }
+            else if(matches.Contains(thisTile))
+            {
+                break;
+            }
+        }
+
+        if(matches.Count < 3)
+        {
+            matches.Clear();
+        }
+        
+        return matches;
+    }
+    
+    public static List<Tile> GetMatchesXAll
+    (this Tile[,] thisGrid, Tile tile)
+        => GetMatchesXAll(thisGrid, tile.Coords, tile.ID);
+    
+    public static List<Tile> GetMatchesXAll(this Tile[,] grid, Vector2Int coord, int prefabId)
     {
         Tile thisTile = grid.Get(coord);
 
@@ -156,10 +256,10 @@ public static class GridF
         return matches;
     }
 
-    public static List<Tile> GetMatchesY
+    public static List<Tile> GetMatchesYAll
     (this Tile[,] thisGrid, Tile tile)
-        => GetMatchesY(thisGrid, tile.Coords, tile.ID);
-    public static List<Tile> GetMatchesY(this Tile[,] grid, Vector2Int coord, int prefabId)
+        => GetMatchesYAll(thisGrid, tile.Coords, tile.ID);
+    public static List<Tile> GetMatchesYAll(this Tile[,] grid, Vector2Int coord, int prefabId)
     {
         Tile thisTile = grid.Get(coord);
 
