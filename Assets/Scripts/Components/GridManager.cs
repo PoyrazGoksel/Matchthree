@@ -217,44 +217,58 @@ namespace Components
 
             _tilesToMove = new Tile[_gridSizeX,_gridSizeY];
 
+
+
             for(int y = 0; y < _gridSizeY; y ++)
-            for(int x = 0; x < _gridSizeX; x ++)
             {
-                Vector2Int thisCoord = new(x, y);
-                Tile thisTile = _grid.Get(thisCoord);
-
-                if(thisTile) continue;
-
-                int spawnPoint = _gridSizeY;
-
-                for(int y1 = y; y1 <= spawnPoint; y1 ++)
+                int spawnStartY = 0;
+                int spawnQueue = 0;
+                
+                for(int x = 0; x < _gridSizeX; x ++)
                 {
-                    if(y1 == spawnPoint)
+                    Vector2Int thisCoord = new(x, y);
+                    Tile thisTile = _grid.Get(thisCoord);
+
+                    if(thisTile) continue;
+
+                    int spawnPoint = _gridSizeY;
+
+                    for(int y1 = y; y1 <= spawnPoint; y1 ++)
                     {
-                        MonoPool randomPool = _tilePoolsByPrefabID.Random();
-                        Tile newTile = randomPool.Request<Tile>();
+                        if(y1 == spawnPoint)
+                        {
+                            if(spawnStartY == 0)
+                            {
+                                spawnStartY = thisCoord.y;
+                            }
                         
-                        Vector3 spawnWorldPos = _grid.CoordsToWorld(_transform, new Vector2Int(x, spawnPoint));
-                        newTile.Teleport(spawnWorldPos);
+                            spawnQueue = thisCoord.y - spawnStartY;
+
+                            MonoPool randomPool = _tilePoolsByPrefabID.Random();
+                            Tile newTile = randomPool.Request<Tile>();
                         
-                        _grid.Set(newTile, thisCoord);
+                            Vector3 spawnWorldPos = _grid.CoordsToWorld(_transform, new Vector2Int(x, spawnPoint + spawnQueue));
+                            newTile.Teleport(spawnWorldPos);
                         
-                        _tilesToMove[thisCoord.x, thisCoord.y] = newTile;
-                        break;
-                    }
-
-                    Vector2Int emptyCoords = new(x, y1);
-
-                    Tile mostTopTile = _grid.Get(emptyCoords);
-
-                    if(mostTopTile)
-                    {
-                        _grid.Set(null, mostTopTile.Coords);
-                        _grid.Set(mostTopTile, thisCoord);
+                            _grid.Set(newTile, thisCoord);
                         
-                        _tilesToMove[thisCoord.x, thisCoord.y] = mostTopTile;
+                            _tilesToMove[thisCoord.x, thisCoord.y] = newTile;
+                            break;
+                        }
 
-                        break;
+                        Vector2Int emptyCoords = new(x, y1);
+
+                        Tile mostTopTile = _grid.Get(emptyCoords);
+
+                        if(mostTopTile)
+                        {
+                            _grid.Set(null, mostTopTile.Coords);
+                            _grid.Set(mostTopTile, thisCoord);
+                        
+                            _tilesToMove[thisCoord.x, thisCoord.y] = mostTopTile;
+
+                            break;
+                        }
                     }
                 }
             }
@@ -266,6 +280,8 @@ namespace Components
         {
             for(int y = 0; y < _gridSizeY; y ++) // TODO: Should start from first tile that we are moving
             {
+                bool shouldWait = false;
+                
                 for(int x = 0; x < _gridSizeX; x ++)
                 {
                     Tile thisTile = _tilesToMove[x, y];
@@ -273,10 +289,17 @@ namespace Components
                     if(thisTile == false) continue;
 
                     thisTile.DoMove(_grid.CoordsToWorld(_transform, thisTile.Coords));
+
+                    shouldWait = true;
                 }
 
-                yield return new WaitForSecondsRealtime(0.1f);
+                if(shouldWait)
+                {
+                    yield return new WaitForSecondsRealtime(0.1f);
+                }
             }
+            
+            GridEvents.InputStart?.Invoke();
         }
 
         private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete)
@@ -324,6 +347,8 @@ namespace Components
 
                     return;
                 }
+                
+                GridEvents.InputStop?.Invoke();
 
                 DoTileMoveAnim
                 (
