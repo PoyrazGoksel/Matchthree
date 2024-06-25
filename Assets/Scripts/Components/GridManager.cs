@@ -96,16 +96,8 @@ namespace Components
             
             foreach(Tile fromTile in _grid)
             {
-                bool isPearl = false;
-
                 hintTile = fromTile;
 
-                if(hintTile.Coords == new Vector2Int(1, 0))
-                {
-                    Debug.LogWarning("Break");
-                    isPearl = true;
-                }
-                
                 Vector2Int thisCoord = fromTile.Coords;
 
                 Vector2Int leftCoord = thisCoord + Vector2Int.left;
@@ -122,12 +114,6 @@ namespace Components
                     matches = _grid.GetMatchesX(fromTile);
                     matches.AddRange(_grid.GetMatchesY(fromTile, isPearl));
 
-                    if(isPearl)
-                    {
-                        Debug.LogWarning($"fromTile.Coords: {fromTile.Coords}, leftCoord {leftCoord}");
-                        Debug.LogWarning($"matches{matches.Count}");
-                    }
-
                     _grid.Swap(toTile, fromTile);
 
                     if(matches.Count > 0)
@@ -139,10 +125,6 @@ namespace Components
                 
                 if(_grid.IsInsideGrid(topCoord))
                 {
-                    if(isPearl)
-                    {
-                        Debug.LogWarning(topCoord);
-                    }
                     Tile toTile = _grid.Get(topCoord);
                     _grid.Swap(fromTile, toTile);
 
@@ -160,8 +142,6 @@ namespace Components
                 
                 if(_grid.IsInsideGrid(rightCoord))
                 {
-                    if(isPearl) { Debug.LogWarning(rightCoord); }
-
                     Tile toTile = _grid.Get(rightCoord);
                     _grid.Swap(fromTile, toTile);
 
@@ -179,8 +159,6 @@ namespace Components
                 
                 if(_grid.IsInsideGrid(botCoord))
                 {
-                    if(isPearl) { Debug.LogWarning(botCoord); }
-
                     Tile toTile = _grid.Get(botCoord);
                     _grid.Swap(fromTile, toTile);
 

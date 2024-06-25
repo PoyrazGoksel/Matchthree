@@ -121,10 +121,10 @@ public static class GridF
     }
 
     public static List<Tile> GetMatchesY
-    (this Tile[,] thisGrid, Tile tile, bool test = false)
-        => GetMatchesY(thisGrid, tile.Coords, tile.ID, test);
+    (this Tile[,] thisGrid, Tile tile)
+        => GetMatchesY(thisGrid, tile.Coords, tile.ID);
 
-    public static List<Tile> GetMatchesY(this Tile[,] grid, Vector2Int coord, int prefabId, bool test = false)
+    public static List<Tile> GetMatchesY(this Tile[,] grid, Vector2Int coord, int prefabId)
     {
         Tile thisTile = grid.Get(coord);
 
@@ -139,20 +139,10 @@ public static class GridF
         if(botMax < gridMin) botMax = gridMin;
         if(topMax > gridLength) topMax = gridLength;
         
-        if(test)
-        {
-            Debug.LogWarning($"botMax {botMax}, topMax {topMax}");
-        }
-        
         for(int y = botMax; y < topMax; y ++)
         {
             Tile currTile = grid[coord.x, y];
-
-            if(test)
-            {
-                Debug.LogWarning($"thisCoord {coord.x}, {y}");
-            }
-
+            
             if(currTile.ID == prefabId)
             {
                 matches.Add(currTile);
