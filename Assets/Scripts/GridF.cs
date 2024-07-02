@@ -387,9 +387,9 @@ public static class GridF
 
         if(tileToSet == false) return tileAtCoord;
         
-        ICoordSet coordSet = tileToSet;
+        ITileGrid tileGrid = tileToSet;
 
-        coordSet.SetCoord(coord);
+        tileGrid.SetCoord(coord);
         
         return tileAtCoord;
     }

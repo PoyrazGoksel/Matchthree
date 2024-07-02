@@ -13,7 +13,7 @@ namespace Extensions.Unity
 
         private readonly MonoPoolData _monoPoolData;
 
-        private readonly List<PoolObjData> _myPool = new List<PoolObjData>();
+        private readonly List<PoolObjData> _myPool = new();
 
         public MonoPool(MonoPoolData monoPoolData)
         {
@@ -52,33 +52,23 @@ namespace Extensions.Unity
                 if (thisPoolObjData.MyPoolObj == poolObj)
                 {
                     _myPool[i].DeSpawn();
-                    // thisPoolObjData.BeforeDeSpawn();
-                    // thisPoolObjData.GameObject.SetActive(false);
-                    // thisPoolObjData.IsActive = false;
-                    // _myPool[i] = thisPoolObjData;
                     ActiveCount--;
-                    break;
+                    return;
                 }
             }
+            
+            Debug.LogWarning($"{poolObj.transform.name} is not in this pool!");
         }
 
         public void DeSpawn(int i)
         {
             _myPool[i].DeSpawn();
-            // PoolObjData thisPoolObjData = _myPool[i];
-            // thisPoolObjData.BeforeDeSpawn();
-            // thisPoolObjData.GameObject.SetActive(false);
-            // thisPoolObjData.IsActive = false;
             ActiveCount --;
-            // _myPool[i] = thisPoolObjData;
         }
 
         public void DeSpawnAll()
         {
-            foreach (PoolObjData poolObjData in _myPool)
-            {
-                poolObjData.DeSpawn();
-            }
+            foreach (PoolObjData poolObjData in _myPool) poolObjData.DeSpawn();
 
             ActiveCount = 0;
         }
@@ -99,7 +89,7 @@ namespace Extensions.Unity
                 {
                     thisPoolObjData.MyPoolObj.TweenDelayedDeSpawn(delegate
                     {
-                        OnOprComplete(thisPoolObjData, i);
+                        OnOprComplete(thisPoolObjData);
                         return true;
                     });
 
@@ -119,29 +109,9 @@ namespace Extensions.Unity
                 ActiveCount --;
                 return true;
             });
-            //
-            // ;
-            // ActiveCount --;
-            //
-            // for (int i = _myPool.Count - 1; i >=  0; i--)
-            // {
-            //     PoolObjData thisPoolObjData = _myPool[i];
-            //
-            //     if (thisPoolObjData.IsActive)
-            //     {
-            //         thisPoolObjData.MyPoolObj.TweenDelayedDeSpawn(delegate
-            //         {
-            //             OnOprComplete(thisPoolObjData, i);
-            //             return true;
-            //         });
-            //
-            //         _myPool[i] = thisPoolObjData;
-            //         break;
-            //     }
-            // }
         }
 
-        private void OnOprComplete(PoolObjData thisPoolObjData, int i)
+        private void OnOprComplete(PoolObjData thisPoolObjData)
         {
             thisPoolObjData.IsActive = false;
             ActiveCount--;
@@ -220,10 +190,7 @@ namespace Extensions.Unity
             GameObject newObj = Object.Instantiate(_monoPoolData.Prefab, worldPos, worldRot, parent);
             IPoolObj newPoolObj = newObj.GetComponent<IPoolObj>();
 
-            PoolObjData newPoolListObjData = new PoolObjData
-            (
-                newPoolObj
-            );
+            PoolObjData newPoolListObjData = new(newPoolObj);
 
             _myPool.Add(newPoolListObjData);
             newPoolListObjData.AfterCreate();

@@ -26,13 +26,13 @@ namespace Components
 
         private void OnDrawGizmos()
         {
-            if(_currMatchesDebug == null) return;
+            if(_lastMatches == null) return;
 
-            if(_currMatchesDebug.Count == 0) return;
+            if(_lastMatches.Count == 0) return;
             
             Gizmos.color = Color.blue;
             
-            foreach(Tile tile in _currMatchesDebug)
+            foreach(Tile tile in _lastMatches)
             {
                 if(! tile) continue;
 
