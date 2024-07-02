@@ -339,7 +339,7 @@ namespace Components
             }
         }
 
-        private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete)
+        private void DoTileMoveAnim(Tile fromTile, Tile toTile, TweenCallback onComplete = null)
         {
             Vector3 fromTileWorldPos = _grid.CoordsToWorld(_transform, fromTile.Coords);
             fromTile.DoMove(fromTileWorldPos);
@@ -377,8 +377,20 @@ namespace Components
 
                 if(! HasMatch(_selectedTile, toTile, out _lastMatches))
                 {
-                    _grid.Swap(toTile, _selectedTile);
+                    GridEvents.InputStop?.Invoke();
 
+                    DoTileMoveAnim(_selectedTile, toTile,
+                        delegate
+                        {
+                            _grid.Swap(toTile, _selectedTile);
+                            
+                            DoTileMoveAnim(_selectedTile, toTile,
+                                delegate
+                                {
+                                    GridEvents.InputStart?.Invoke();
+                                });
+                        });
+                    
                     return;
                 }
                 
