@@ -15,8 +15,6 @@ namespace Components
 
         private void Awake() {_inputRoutine = new RoutineHelper(this, null, InputUpdate);}
 
-        private void Start() {_inputRoutine.StartCoroutine();}
-
         private void InputUpdate()
         {
             if(Input.GetMouseButtonDown(0))

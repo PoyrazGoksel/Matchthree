@@ -67,6 +67,11 @@ namespace Components
 
             return TweenContainer.AddedTween;
         }
+
+        public void DoHint(GridDir gridDir)
+        {
+            //TODO: Later ...
+        }
     }
 
     public interface ITileGrid

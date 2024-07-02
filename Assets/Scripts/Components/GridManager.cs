@@ -37,6 +37,8 @@ namespace Components
         private MonoPool _tilePool3;
         private Tile[,] _tilesToMove;
         private List<Tile> _lastMatches;
+        private Tile _hintTile;
+        private GridDir _hintDir;
 
         private void Awake()
         {
@@ -71,7 +73,9 @@ namespace Components
                 tile.gameObject.Destroy();
             }
 
+            IsGameOver(out _hintTile, out _hintDir);
             GridEvents.GridLoaded?.Invoke(_gridBounds);
+            GridEvents.InputStart?.Invoke();
         }
 
         private void OnEnable() {RegisterEvents();}
@@ -328,6 +332,7 @@ namespace Components
                     }
                     else
                     {
+                        IsGameOver(out _hintTile, out _hintDir);
                         GridEvents.InputStart?.Invoke();
                     }
                 };
@@ -347,10 +352,28 @@ namespace Components
             toTile.DoMove(toTileWorldPos, onComplete);
         }
 
+        private void TryShowHint()
+        {
+            if(_hintTile)
+            {
+                Vector2Int gridMoveDir = _hintDir.ToVector();
+
+                Vector3 moveCoords = _grid.CoordsToWorld(_transform, _hintTile.Coords + gridMoveDir);
+                
+                _hintTile.DoMove(moveCoords);
+            }
+        }
+
         private void RegisterEvents()
         {
             InputEvents.MouseDownGrid += OnMouseDownGrid;
             InputEvents.MouseUpGrid += OnMouseUpGrid;
+            GridEvents.InputStart += OnInputStart;
+        }
+
+        private void OnInputStart()
+        {
+            this.WaitFor(new WaitForSeconds(1f), TryShowHint);
         }
 
         private void OnMouseDownGrid(Tile clickedTile, Vector3 dirVector)
@@ -420,6 +443,7 @@ namespace Components
         {
             InputEvents.MouseDownGrid -= OnMouseDownGrid;
             InputEvents.MouseUpGrid -= OnMouseUpGrid;
+            GridEvents.InputStart -= OnInputStart;
         }
     }
 }
