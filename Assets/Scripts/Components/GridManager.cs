@@ -18,7 +18,9 @@ namespace Components
         [Inject] private InputEvents InputEvents{get;set;}
         [Inject] private GridEvents GridEvents{get;set;}
         [BoxGroup(Order = 999)]
-        [TableMatrix(SquareCells = true, DrawElementMethod = nameof(DrawTile))]
+#if UNITY_EDITOR
+        [TableMatrix(SquareCells = true, DrawElementMethod = nameof(DrawTile))]  
+#endif
         [OdinSerialize]
         private Tile[,] _grid;
         [SerializeField] private List<GameObject> _tilePrefabs;
@@ -33,17 +35,18 @@ namespace Components
         private Tile _selectedTile;
         private Vector3 _mouseDownPos;
         private Vector3 _mouseUpPos;
-        public ITweenContainer TweenContainer{get;set;}
         private List<MonoPool> _tilePoolsByPrefabID;
         private MonoPool _tilePool0;
         private MonoPool _tilePool1;
         private MonoPool _tilePool2;
         private MonoPool _tilePool3;
         private Tile[,] _tilesToMove;
-        [OdinSerialize]private List<List<Tile>> _lastMatches;
+        [OdinSerialize] private List<List<Tile>> _lastMatches;
         private Tile _hintTile;
         private GridDir _hintDir;
         private Sequence _hintTween;
+        private Coroutine _destroyRoutine;
+        public ITweenContainer TweenContainer{get;set;}
 
         private void Awake()
         {
@@ -93,31 +96,31 @@ namespace Components
 
         private bool CanMove(Vector2Int tileMoveCoord) => _grid.IsInsideGrid(tileMoveCoord);
 
-        private bool HasMatch(Tile fromTile, Tile toTile, out List<List<Tile>> matches)
-        {
-            matches = new List<List<Tile>>();
-            bool hasMatches = false;
-
-            List<Tile> matchesAll = _grid.GetMatchesYAll(toTile);
-            matchesAll.AddRange(_grid.GetMatchesXAll(toTile));
-
-            if(matchesAll.Count > 0)
-            {
-                matches.Add(matchesAll);
-            }
-
-            matchesAll = _grid.GetMatchesYAll(fromTile);
-            matchesAll.AddRange(_grid.GetMatchesXAll(fromTile));
-
-            if(matchesAll.Count > 0)
-            {
-                matches.Add(matchesAll);
-            }
-            
-            if(matches.Count > 0) hasMatches = true;
-
-            return hasMatches;
-        }
+        // private bool HasMatch(Tile fromTile, Tile toTile, out List<List<Tile>> matches)
+        // {
+        //     matches = new List<List<Tile>>();
+        //     bool hasMatches = false;
+        //
+        //     List<Tile> matchesAll = _grid.GetMatchesYAll(toTile);
+        //     matchesAll.AddRange(_grid.GetMatchesXAll(toTile));
+        //
+        //     if(matchesAll.Count > 0)
+        //     {
+        //         matches.Add(matchesAll);
+        //     }
+        //
+        //     matchesAll = _grid.GetMatchesYAll(fromTile);
+        //     matchesAll.AddRange(_grid.GetMatchesXAll(fromTile));
+        //
+        //     if(matchesAll.Count > 0)
+        //     {
+        //         matches.Add(matchesAll);
+        //     }
+        //     
+        //     if(matches.Count > 0) hasMatches = true;
+        //
+        //     return hasMatches;
+        // }
 
         private bool HasAnyMatches(out List<List<Tile>> matches)
         {
@@ -133,7 +136,25 @@ namespace Components
                     matches.Add(matchesAll);
                 }
             }
-            
+
+            matches = matches.OrderByDescending(e => e.Count).ToList();
+
+            for(int i = 0; i < matches.Count; i ++)
+            {
+                List<Tile> match = matches[i];
+                match = match.Where(e => e.ToBeDestroyed == false).ToList();
+
+                if(match.Count > 2)
+                {
+                    matches[i] = match;
+                    match.DoToAll(e => e.ToBeDestroyed = true);
+                }
+                else
+                {
+                    matches.Remove(match);
+                }
+            }
+
             return matches.Count > 0;
         }
 
@@ -228,17 +249,6 @@ namespace Components
             return matches.Count == 0;
         }
 
-        [Button]
-        private void TestGridDir(Vector2 input) {Debug.LogWarning(GridF.GetGridDir(input));}
-
-        [Button]
-        private void TestGameOver()
-        {
-            bool isGameOver = IsGameOver(out Tile hintTile, out GridDir hintDir);
-
-            Debug.LogWarning($"isGameOver: {isGameOver}, hintTile {hintTile}, hintDir {hintDir}", hintTile);
-        }
-
         private void SpawnAndAllocateTiles()
         {
             _tilesToMove = new Tile[_gridSizeX,_gridSizeY];
@@ -309,7 +319,7 @@ namespace Components
         }
 
         private Tile SpawnTile(int id, Vector3 worldPos, Vector2Int coords) => SpawnTile(_tilePoolsByPrefabID[id], worldPos, coords);
-        
+
         private IEnumerator RainDownRoutine()
         {
             int longestDistY = 0;
@@ -348,7 +358,7 @@ namespace Components
                 {
                     if(HasAnyMatches(out _lastMatches))
                     {
-                        StartCoroutine(DestroyRoutine());
+                        StartDestroyRoutine();
                     }
                     else
                     {
@@ -364,20 +374,31 @@ namespace Components
             }
         }
 
+        private void StartDestroyRoutine()
+        {
+            if(_destroyRoutine != null)
+            {
+                StopCoroutine(_destroyRoutine);
+            }
+            
+            _destroyRoutine = StartCoroutine(DestroyRoutine());
+        }
+        
         private IEnumerator DestroyRoutine()
         {
             foreach(List<Tile> matches in _lastMatches)
             {
+                int groupCount = matches.Count;
                 matches.DoToAll(DespawnTile);
-
-                EDebug.Method();
+                
+                GridEvents.MatchGroupDespawn?.Invoke(groupCount);
                 
                 yield return new WaitForSeconds(0.1f);
             }
             
             SpawnAndAllocateTiles();
         }
-        
+
         private void DespawnTile(Tile e)
         {
             _grid.Set(null, e.Coords);
@@ -443,7 +464,7 @@ namespace Components
 
                 _grid.Swap(_selectedTile, toTile);
 
-                if(! HasMatch(_selectedTile, toTile, out _lastMatches))
+                if(! HasAnyMatches(out _lastMatches))
                 {
                     GridEvents.InputStop?.Invoke();
 
@@ -467,15 +488,12 @@ namespace Components
                     (
                         _selectedTile,
                         toTile,
-                        delegate
-                        {
-                            StartCoroutine(DestroyRoutine());
-                        }
+                        StartDestroyRoutine
                     );
                 }
             }
         }
-        
+
         private void UnRegisterEvents()
         {
             InputEvents.MouseDownGrid -= OnMouseDownGrid;

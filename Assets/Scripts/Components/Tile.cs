@@ -16,6 +16,7 @@ namespace Components
         [SerializeField] private Transform _transform;
         public MonoPool MyPool{get;set;}
         public ITweenContainer TweenContainer{get;set;}
+        public bool ToBeDestroyed{get;set;}
 
         private void Awake()
         {
@@ -49,6 +50,7 @@ namespace Components
 
         public void AfterSpawn()
         {
+            ToBeDestroyed = false;
             //RESET METHOD (Resurrect)
         }
 

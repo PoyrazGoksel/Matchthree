@@ -8,5 +8,6 @@ namespace Events
         public UnityAction<Bounds> GridLoaded;
         public UnityAction InputStart;
         public UnityAction InputStop;
+        public UnityAction<int> MatchGroupDespawn;
     }
 }
