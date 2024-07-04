@@ -68,9 +68,18 @@ namespace Components
             return TweenContainer.AddedTween;
         }
 
-        public void DoHint(GridDir gridDir)
+        public Sequence DoHint(Vector3 worldPos, TweenCallback onComplete = null)
         {
-            //TODO: Later ...
+            Vector3 lastPos = _transform.position;
+            
+            TweenContainer.AddSequence = DOTween.Sequence();
+            
+            TweenContainer.AddedSeq.Append(_transform.DOMove(worldPos, 1f));
+            TweenContainer.AddedSeq.Append(_transform.DOMove(lastPos, 1f));
+
+            TweenContainer.AddedSeq.onComplete += onComplete;
+
+            return TweenContainer.AddedSeq;
         }
     }
 

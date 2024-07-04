@@ -43,6 +43,7 @@ namespace Components
         [OdinSerialize]private List<List<Tile>> _lastMatches;
         private Tile _hintTile;
         private GridDir _hintDir;
+        private Sequence _hintTween;
 
         private void Awake()
         {
@@ -399,7 +400,7 @@ namespace Components
 
                 Vector3 moveCoords = _grid.CoordsToWorld(_transform, _hintTile.Coords + gridMoveDir);
                 
-                _hintTile.DoMove(moveCoords);
+                _hintTween = _hintTile.DoHint(moveCoords);
             }
         }
 
@@ -419,6 +420,11 @@ namespace Components
         {
             _selectedTile = clickedTile;
             _mouseDownPos = dirVector;
+
+            if(_hintTween.IsActive())
+            {
+                _hintTween.Complete();
+            }
         }
 
         private void OnMouseUpGrid(Vector3 mouseUpPos)
