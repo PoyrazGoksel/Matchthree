@@ -30,8 +30,18 @@ namespace Components
         [SerializeField] private Bounds _gridBounds;
         [SerializeField] private Transform _transform;
         [SerializeField] private List<GameObject> _tileBGs = new();
+        [SerializeField] private List<GameObject> _gridBorders = new();
         [SerializeField] private GameObject _tileBGPrefab;
         [SerializeField] private Transform _bGTrans;
+        [SerializeField] private GameObject _borderTopLeft;
+        [SerializeField] private GameObject _borderTopRight;
+        [SerializeField] private GameObject _borderBotLeft;
+        [SerializeField] private GameObject _borderBotRight;
+        [SerializeField] private GameObject _borderLeft;
+        [SerializeField] private GameObject _borderRight;
+        [SerializeField] private GameObject _borderTop;
+        [SerializeField] private GameObject _borderBot;
+        [SerializeField] private Transform _borderTrans;
         private Tile _selectedTile;
         private Vector3 _mouseDownPos;
         private Vector3 _mouseUpPos;
