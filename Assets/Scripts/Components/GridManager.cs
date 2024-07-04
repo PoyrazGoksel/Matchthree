@@ -26,6 +26,9 @@ namespace Components
         [SerializeField] private List<int> _prefabIds;
         [SerializeField] private Bounds _gridBounds;
         [SerializeField] private Transform _transform;
+        [SerializeField] private List<GameObject> _tileBGs = new();
+        [SerializeField] private GameObject _tileBGPrefab;
+        [SerializeField] private Transform _bGTrans;
         private Tile _selectedTile;
         private Vector3 _mouseDownPos;
         private Vector3 _mouseUpPos;

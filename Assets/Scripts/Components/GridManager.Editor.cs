@@ -93,7 +93,30 @@ namespace Components
                 _grid[coord.x, coord.y] = tile;// Becarefull while assigning tile to inversed y coordinates!
             }
             
+            GenerateTileBG();
             CalculateBounds();
+        }
+
+        
+        [Button]
+        private void GenerateTileBG()
+        {
+            _tileBGs.DoToAll(DestroyImmediate);
+            
+            foreach(Tile tile in _grid)
+            {
+                Vector3 tileWorldPos = tile.transform.position;
+
+                GameObject tileBg = Instantiate
+                (
+                    _tileBGPrefab,
+                    tileWorldPos,
+                    Quaternion.identity,
+                    _bGTrans
+                );
+                
+                _tileBGs.Add(tileBg);
+            }
         }
 #endif
     }
