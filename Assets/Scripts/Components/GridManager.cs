@@ -57,6 +57,7 @@ namespace Components
         private Sequence _hintTween;
         private Coroutine _destroyRoutine;
         public ITweenContainer TweenContainer{get;set;}
+        private Coroutine _hintRoutine;
 
         private void Awake()
         {
@@ -76,7 +77,7 @@ namespace Components
                 
                 _tilePoolsByPrefabID.Add(tilePool);
             }
-
+            
             TweenContainer = TweenContain.Install(this);
         }
 
@@ -396,16 +397,17 @@ namespace Components
         
         private IEnumerator DestroyRoutine()
         {
+            int groupCount = _lastMatches.Count;
+            
             foreach(List<Tile> matches in _lastMatches)
             {
-                int groupCount = matches.Count;
                 matches.DoToAll(DespawnTile);
-                
-                GridEvents.MatchGroupDespawn?.Invoke(groupCount);
                 
                 yield return new WaitForSeconds(0.1f);
             }
             
+            GridEvents.MatchGroupDespawn?.Invoke(groupCount);
+
             SpawnAndAllocateTiles();
         }
 
@@ -423,6 +425,33 @@ namespace Components
             toTile.DoMove(toTileWorldPos, onComplete);
         }
 
+        private void StartHintRoutine()
+        {
+            if(_hintRoutine != null)
+            {
+                StopCoroutine(_hintRoutine);
+            }
+
+            _hintRoutine = StartCoroutine(HintRoutineUpdate());
+        }
+        
+        private void StopHintRoutine()
+        {
+            if(_hintRoutine != null)
+            {
+                StopCoroutine(_hintRoutine);
+                _hintRoutine = null;
+            }
+        }
+        
+        private IEnumerator HintRoutineUpdate()
+        {
+            while(true)
+            {
+                yield return new WaitForSeconds(3f);
+                TryShowHint();
+            }
+        }
         private void TryShowHint()
         {
             if(_hintTile)
@@ -440,11 +469,17 @@ namespace Components
             InputEvents.MouseDownGrid += OnMouseDownGrid;
             InputEvents.MouseUpGrid += OnMouseUpGrid;
             GridEvents.InputStart += OnInputStart;
+            GridEvents.InputStop += OnInputStop;
+        }
+
+        private void OnInputStop()
+        {
+            StopHintRoutine();
         }
 
         private void OnInputStart()
         {
-            this.WaitFor(new WaitForSeconds(1f), TryShowHint);
+            StartHintRoutine();
         }
 
         private void OnMouseDownGrid(Tile clickedTile, Vector3 dirVector)
@@ -509,6 +544,7 @@ namespace Components
             InputEvents.MouseDownGrid -= OnMouseDownGrid;
             InputEvents.MouseUpGrid -= OnMouseUpGrid;
             GridEvents.InputStart -= OnInputStart;
+            GridEvents.InputStop -= OnInputStop;
         }
     }
 }
