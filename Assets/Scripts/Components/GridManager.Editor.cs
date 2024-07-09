@@ -127,13 +127,13 @@ namespace Components
             {
                 Vector3 tileWorldPos = tile.transform.position;
 
-                GameObject tileBg = Instantiate
+                GameObject tileBg = PrefabUtility.InstantiatePrefab
                 (
                     _tileBGPrefab,
-                    tileWorldPos,
-                    Quaternion.identity,
                     _bGTrans
-                );
+                ) as GameObject;
+
+                tileBg.transform.position = tileWorldPos;
                 
                 _tileBGs.Add(tileBg);
             }
@@ -174,14 +174,14 @@ namespace Components
 
         private void InstantiateBorder(Vector3 tileWPos, GameObject borderPrefab)
         {
-            GameObject newBorder = Instantiate
+            GameObject newBorder = PrefabUtility.InstantiatePrefab
             (
                 borderPrefab,
-                tileWPos,
-                Quaternion.identity,
                 _borderTrans
-            );
+            ) as GameObject;
 
+            newBorder.transform.position = tileWPos;
+            
             _gridBorders.Add(newBorder);
         }
 #endif

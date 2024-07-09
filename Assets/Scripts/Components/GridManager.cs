@@ -437,6 +437,11 @@ namespace Components
         
         private void StopHintRoutine()
         {
+            if(_hintTile)
+            {
+                _hintTile.Teleport(_grid.CoordsToWorld(_transform, _hintTile.Coords));
+            }
+            
             if(_hintRoutine != null)
             {
                 StopCoroutine(_hintRoutine);
