@@ -58,6 +58,7 @@ namespace Components
         private Coroutine _destroyRoutine;
         public ITweenContainer TweenContainer{get;set;}
         private Coroutine _hintRoutine;
+        [SerializeField]private int _scoreMulti;
 
         private void Awake()
         {
@@ -141,7 +142,7 @@ namespace Components
             {
                 List<Tile> matchesAll = _grid.GetMatchesXAll(tile);
                 matchesAll.AddRange(_grid.GetMatchesYAll(tile));
-
+                
                 if(matchesAll.Count > 0)
                 {
                     matches.Add(matchesAll);
@@ -153,18 +154,11 @@ namespace Components
             for(int i = 0; i < matches.Count; i ++)
             {
                 List<Tile> match = matches[i];
-                match = match.Where(e => e.ToBeDestroyed == false).ToList();
-
-                if(match.Count > 2)
-                {
-                    matches[i] = match;
-                    match.DoToAll(e => e.ToBeDestroyed = true);
-                }
-                else
-                {
-                    matches.Remove(match);
-                }
+                
+                matches[i] = match.Where(e => e.ToBeDestroyed == false).DoToAll(e => e.ToBeDestroyed = true).ToList();
             }
+            
+            matches = matches.Where(e => e.Count > 2).ToList();
 
             return matches.Count > 0;
         }
@@ -397,17 +391,18 @@ namespace Components
         
         private IEnumerator DestroyRoutine()
         {
-            int groupCount = _lastMatches.Count;
-            
             foreach(List<Tile> matches in _lastMatches)
             {
+                IncScoreMulti();
                 matches.DoToAll(DespawnTile);
                 
+                //TODO: Show score multi text in ui as PunchScale
+                
+                GridEvents.MatchGroupDespawn?.Invoke(matches.Count * _scoreMulti);
+    
                 yield return new WaitForSeconds(0.1f);
             }
             
-            GridEvents.MatchGroupDespawn?.Invoke(groupCount);
-
             SpawnAndAllocateTiles();
         }
 
@@ -469,6 +464,13 @@ namespace Components
             }
         }
 
+        private void ResetScoreMulti() {_scoreMulti = 0;}
+
+        private void IncScoreMulti()
+        {
+            _scoreMulti ++;
+        }
+
         private void RegisterEvents()
         {
             InputEvents.MouseDownGrid += OnMouseDownGrid;
@@ -485,6 +487,7 @@ namespace Components
         private void OnInputStart()
         {
             StartHintRoutine();
+            ResetScoreMulti();
         }
 
         private void OnMouseDownGrid(Tile clickedTile, Vector3 dirVector)
