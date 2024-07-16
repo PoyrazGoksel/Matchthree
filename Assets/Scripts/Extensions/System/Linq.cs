@@ -38,6 +38,14 @@ namespace Extensions.System
             return i + 1;
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thisCollection"></param>
+        /// <param name="min">Inclusive</param>
+        /// <param name="max">Exclusive</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T Random<T>(this IEnumerable<T> thisCollection, int min = 0, int max = 0)
         {
             List<T> thisList = thisCollection.ToList();

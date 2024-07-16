@@ -27,8 +27,6 @@ namespace Components.UI
 
         private void OnMatchGroupDespawn(int arg0)
         {
-            Debug.LogWarning($"{arg0}");
-            
             _playerScore += arg0;
 
             if(_counterTween.IsActive()) _counterTween.Kill();

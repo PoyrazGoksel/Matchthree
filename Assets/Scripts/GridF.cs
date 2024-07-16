@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Components;
 using Extensions.System;
 using Extensions.Unity;
@@ -90,6 +91,33 @@ public static class GridF
         }
     }
 
+    public static bool TryGetDiagonalTopTileFirst(this Tile[,] thisGrid, Vector2Int coords, out Tile tileDiagonal)
+    {
+        tileDiagonal = null;
+
+        List<Vector2Int> topDiagonalCoords = new()
+        {
+            new Vector2Int(coords.x - 1, coords.y + 1),
+            new Vector2Int(coords.x + 1, coords.y + 1)
+        };
+
+        List<Tile> firstDiagCoords = topDiagonalCoords.
+        Where(thisGrid.IsInsideGrid).
+        Select(thisGrid.Get).
+        NotNull().
+        Where(e => e.ID != EnvVar.TileBoxID).
+        ToList();
+
+        int count = firstDiagCoords.Count;
+
+        if(count > 0)
+        {
+            tileDiagonal = firstDiagCoords[0];
+        }
+
+        return count > 0;
+    }
+    
     public static bool TryGetMostBelowEmpty(this Tile[,] thisGrid, Tile thisTile, out Vector2Int belowTileCoords)
     {
         Vector2Int belowCoords = thisTile.Coords;

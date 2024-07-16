@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f423f39078b1499aa5315275d7cf1536, type: 3}
+  m_Name: ProjectSettings
+  m_EditorClassIdentifier: 
+  _gridManagerSettings:
+    _tileBGPrefab: {fileID: 6510324642160800878, guid: 47a9413a8810cdb41aab68edaa5af666, type: 3}
+    _prefabIds: 00000000010000000200000003000000
+    _tilePrefabs:
+    - {fileID: 1132952940823195531, guid: a915cb5d28a840a46b7fc67dca5db1b2, type: 3}
+    - {fileID: 7149524400660833327, guid: 5374ced143087d84c907916304c0b77c, type: 3}
+    - {fileID: 4449326010757001007, guid: 0a050ac7d41622248b8bea31423c792d, type: 3}
+    - {fileID: 5667693011366091865, guid: ceca2dd5e3c394f4ebf5abee7e17d573, type: 3}
+    _borderTopLeft: {fileID: 7106422499489609475, guid: ad3ef3c6a247b60469030afe82b2c71b, type: 3}
+    _borderTopRight: {fileID: 6577998778047179070, guid: dfba2abeb4409d6478c43af45d4744f5, type: 3}
+    _borderBotLeft: {fileID: 1108776252262637598, guid: cb54194393ec53043a3144d692092e28, type: 3}
+    _borderBotRight: {fileID: 8950633385257935514, guid: 4499a13c67b73ad45850dffa80ca95b1, type: 3}
+    _borderLeft: {fileID: 8413465076695143071, guid: e34de9532c5236c49aa8e64a5b34c663, type: 3}
+    _borderRight: {fileID: 3059236098426556812, guid: a9b64dfddf7c7cc42830b6423239c82f, type: 3}
+    _borderTop: {fileID: 5702349581114143747, guid: 674ae8318122f9248bd9e1c38ab57d50, type: 3}
+    _borderBot: {fileID: 300212750297537209, guid: 14295bea19e706942a07035fdc49b4c6, type: 3}

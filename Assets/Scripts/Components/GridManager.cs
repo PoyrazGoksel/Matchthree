@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -6,6 +7,7 @@ using Events;
 using Extensions.DoTween;
 using Extensions.System;
 using Extensions.Unity;
+using Settings;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEngine;
@@ -17,30 +19,20 @@ namespace Components
     {
         [Inject] private InputEvents InputEvents{get;set;}
         [Inject] private GridEvents GridEvents{get;set;}
+        [Inject] private ProjectSettings ProjectSettings{get;set;}
         [BoxGroup(Order = 999)]
 #if UNITY_EDITOR
         [TableMatrix(SquareCells = true, DrawElementMethod = nameof(DrawTile))]  
 #endif
         [OdinSerialize]
         private Tile[,] _grid;
-        [SerializeField] private List<GameObject> _tilePrefabs;
         [SerializeField] private int _gridSizeX;
         [SerializeField] private int _gridSizeY;
-        [SerializeField] private List<int> _prefabIds;
         [SerializeField] private Bounds _gridBounds;
         [SerializeField] private Transform _transform;
         [SerializeField] private List<GameObject> _tileBGs = new();
         [SerializeField] private List<GameObject> _gridBorders = new();
-        [SerializeField] private GameObject _tileBGPrefab;
         [SerializeField] private Transform _bGTrans;
-        [SerializeField] private GameObject _borderTopLeft;
-        [SerializeField] private GameObject _borderTopRight;
-        [SerializeField] private GameObject _borderBotLeft;
-        [SerializeField] private GameObject _borderBotRight;
-        [SerializeField] private GameObject _borderLeft;
-        [SerializeField] private GameObject _borderRight;
-        [SerializeField] private GameObject _borderTop;
-        [SerializeField] private GameObject _borderBot;
         [SerializeField] private Transform _borderTrans;
         private Tile _selectedTile;
         private Vector3 _mouseDownPos;
@@ -56,21 +48,24 @@ namespace Components
         private GridDir _hintDir;
         private Sequence _hintTween;
         private Coroutine _destroyRoutine;
-        public ITweenContainer TweenContainer{get;set;}
         private Coroutine _hintRoutine;
-        [SerializeField]private int _scoreMulti;
+        [SerializeField] private int _scoreMulti;
+        private Settings _mySettings;
+        public ITweenContainer TweenContainer{get;set;}
 
         private void Awake()
         {
+            _mySettings = ProjectSettings.GridManagerSettings;
+            
             _tilePoolsByPrefabID = new List<MonoPool>();
             
-            for(int prefabId = 0; prefabId < _prefabIds.Count; prefabId ++)
+            for(int prefabId = 0; prefabId < _mySettings.PrefabIDs.Count; prefabId ++)
             {
                 MonoPool tilePool = new
                 (
                     new MonoPoolData
                     (
-                        _tilePrefabs[prefabId],
+                        _mySettings.TilePrefabs[prefabId],
                         10,
                         _transform
                     )
@@ -157,8 +152,9 @@ namespace Components
                 
                 matches[i] = match.Where(e => e.ToBeDestroyed == false).DoToAll(e => e.ToBeDestroyed = true).ToList();
             }
+            const int matchIndex = 2;
             
-            matches = matches.Where(e => e.Count > 2).ToList();
+            matches = matches.Where(e => e.Count > matchIndex).ToList();
 
             return matches.Count > 0;
         }
@@ -339,7 +335,7 @@ namespace Components
                     Tile thisTile = _tilesToMove[x, y];
 
                     if(thisTile == false) continue;
-
+                    
                     Tween thisTween = thisTile.DoMove(_grid.CoordsToWorld(_transform, thisTile.Coords));
 
                     shouldWait = true;
@@ -388,7 +384,7 @@ namespace Components
             
             _destroyRoutine = StartCoroutine(DestroyRoutine());
         }
-        
+
         private IEnumerator DestroyRoutine()
         {
             foreach(List<Tile> matches in _lastMatches)
@@ -429,7 +425,7 @@ namespace Components
 
             _hintRoutine = StartCoroutine(HintRoutineUpdate());
         }
-        
+
         private void StopHintRoutine()
         {
             if(_hintTile)
@@ -443,7 +439,7 @@ namespace Components
                 _hintRoutine = null;
             }
         }
-        
+
         private IEnumerator HintRoutineUpdate()
         {
             while(true)
@@ -452,6 +448,7 @@ namespace Components
                 TryShowHint();
             }
         }
+
         private void TryShowHint()
         {
             if(_hintTile)
@@ -553,6 +550,33 @@ namespace Components
             InputEvents.MouseUpGrid -= OnMouseUpGrid;
             GridEvents.InputStart -= OnInputStart;
             GridEvents.InputStop -= OnInputStop;
+        }
+
+        [Serializable]
+        public class Settings
+        {
+            public List<GameObject> TilePrefabs => _tilePrefabs;
+            public List<int> PrefabIDs => _prefabIds;
+            public GameObject TileBGPrefab => _tileBGPrefab;
+            [SerializeField] private GameObject _tileBGPrefab;
+            [SerializeField] private List<int> _prefabIds;
+            [SerializeField] private List<GameObject> _tilePrefabs;
+            [SerializeField] private GameObject _borderTopLeft;
+            [SerializeField] private GameObject _borderTopRight;
+            [SerializeField] private GameObject _borderBotLeft;
+            [SerializeField] private GameObject _borderBotRight;
+            [SerializeField] private GameObject _borderLeft;
+            [SerializeField] private GameObject _borderRight;
+            [SerializeField] private GameObject _borderTop;
+            [SerializeField] private GameObject _borderBot;
+            public GameObject BorderTopLeft => _borderTopLeft;
+            public GameObject BorderTopRight => _borderTopRight;
+            public GameObject BorderBotLeft => _borderBotLeft;
+            public GameObject BorderBotRight => _borderBotRight;
+            public GameObject BorderLeft => _borderLeft;
+            public GameObject BorderRight => _borderRight;
+            public GameObject BorderTop => _borderTop;
+            public GameObject BorderBot => _borderBot;
         }
     }
 }
