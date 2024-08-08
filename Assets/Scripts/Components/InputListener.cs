@@ -64,7 +64,6 @@ namespace Components
 
                 if(distDelta.Abs() >= ZoomDeltaThreshold)
                 {
-                    Debug.LogWarning($"distDelta {distDelta}");
                     InputEvents.ZoomDelta?.Invoke(distDelta);
                 }
 
