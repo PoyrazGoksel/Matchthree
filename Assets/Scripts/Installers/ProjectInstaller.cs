@@ -1,4 +1,5 @@
 using Events;
+using Extensions.Unity;
 using Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -23,7 +24,7 @@ namespace Installers
         {
             _projectEvents = new ProjectEvents();
             Container.BindInstance(_projectEvents).AsSingle();
-            
+
             _inputEvents = new InputEvents();
             Container.BindInstance(_inputEvents).AsSingle();
 
@@ -37,29 +38,25 @@ namespace Installers
             Container.BindInstance(_projectSettings).AsSingle();
         }
 
-        private void Awake()
-        {
-            RegisterEvents();
-        }
+        private void Awake() {RegisterEvents();}
 
         public override void Start()
         {
             _projectEvents.ProjectStarted?.Invoke();
+
+            if(SceneManager.GetActiveScene().name == EnvVar.LoginSceneName)
+            {
+                LoadScene(EnvVar.MainSceneName);
+            }
         }
 
         private static void LoadScene(string sceneName) {SceneManager.LoadScene(sceneName);}
 
-        private void RegisterEvents()
-        {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
+        private void RegisterEvents() {SceneManager.sceneLoaded += OnSceneLoaded;}
 
         private void OnSceneLoaded(Scene loadedScene, LoadSceneMode arg1)
         {
-            if(loadedScene.name == EnvVar.LoginSceneName)
-            {
-                LoadScene(EnvVar.MainSceneName);
-            }
+            //if(loadedScene.name == EnvVar.LoginSceneName) LoadScene(EnvVar.MainSceneName);
         }
     }
 }

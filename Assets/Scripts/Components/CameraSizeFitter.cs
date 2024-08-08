@@ -8,12 +8,19 @@ namespace Components
     public class CameraSizeFitter : EventListenerMono
     {
         [Inject] private GridEvents GridEvents{get;set;}
+        [Inject] private InputEvents InputEvents{get;set;}
         [SerializeField] private Camera _camera;
         [SerializeField] private Transform _transform;
-        
+
         protected override void RegisterEvents()
         {
             GridEvents.GridLoaded += OnGridLoaded;
+            InputEvents.ZoomDelta += OnZoomDelta;
+        }
+
+        private void OnZoomDelta(float arg0)
+        {
+            _camera.orthographicSize += arg0;
         }
 
         private void OnGridLoaded(Bounds gridBounds)
@@ -25,6 +32,7 @@ namespace Components
         protected override void UnRegisterEvents()
         {
             GridEvents.GridLoaded -= OnGridLoaded;
+            InputEvents.ZoomDelta -= OnZoomDelta;
         }
     }
 }
