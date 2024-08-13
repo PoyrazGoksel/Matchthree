@@ -1,8 +1,8 @@
 using Events;
-using Extensions.Unity;
 using Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using ViewModels;
 using Zenject;
 
 namespace Installers
@@ -18,6 +18,7 @@ namespace Installers
         {
             InstallEvents();
             InstallSettings();
+            InstallData();
         }
 
         private void InstallEvents()
@@ -38,6 +39,11 @@ namespace Installers
             Container.BindInstance(_projectSettings).AsSingle();
         }
 
+        private void InstallData()
+        {
+            Container.BindInterfacesAndSelfTo<PlayerVM>().AsSingle();
+        }
+
         private void Awake() {RegisterEvents();}
 
         public override void Start()
@@ -52,7 +58,16 @@ namespace Installers
 
         private static void LoadScene(string sceneName) {SceneManager.LoadScene(sceneName);}
 
-        private void RegisterEvents() {SceneManager.sceneLoaded += OnSceneLoaded;}
+        private void RegisterEvents()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            _projectEvents.LevelComplete += OnLevelComplete;
+        }
+
+        private void OnLevelComplete()
+        {
+            LoadScene(EnvVar.MainSceneName);
+        }
 
         private void OnSceneLoaded(Scene loadedScene, LoadSceneMode arg1)
         {

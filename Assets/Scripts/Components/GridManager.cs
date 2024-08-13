@@ -533,6 +533,7 @@ namespace Components
                 else
                 {
                     GridEvents.InputStop?.Invoke();
+                    GridEvents.PlayerMoved?.Invoke();
 
                     DoTileMoveAnim
                     (

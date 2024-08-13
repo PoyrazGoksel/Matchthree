@@ -39,5 +39,10 @@ namespace Services
         {
             return _currentGroup.ToInt();
         }
+
+        public void ForceSetGroup(bool group)
+        {
+            PlayerPrefs.SetInt(ABTestPrefKey, group.ToInt());
+        }
     }
 }

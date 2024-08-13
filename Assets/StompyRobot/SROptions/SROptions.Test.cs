@@ -1,8 +1,11 @@
-﻿//#define ENABLE_TEST_SROPTIONS
+﻿#define ENABLE_TEST_SROPTIONS
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using Extensions.System;
+using Services;
 #if !DISABLE_SRDEBUGGER
 using SRDebugger;
 using SRDebugger.Services;
@@ -38,7 +41,27 @@ public partial class SROptions
     private float _test01Range;
     private float _testFractionIncrement;
     private int _testLargeIncrement;
-
+    private List<TestValues> _testValuesList = new();
+    private string _addToList;
+    
+    [Category("Add string To List")]
+    public string AddEnumToList {
+        get
+        {
+            return _addToList;
+        }
+        private set
+        {
+            _addToList = value;
+        } }
+    
+    [Category("Switch ABGroup")]
+    public bool ABGroup
+    {
+        get => ToBeToAPI.Ins.GetGroup().ToBool();
+        set => ToBeToAPI.Ins.ForceSetGroup(value);
+    }
+    
     [Category("Test")]
     public float TestFloat
     {
@@ -123,6 +146,7 @@ public partial class SROptions
         set
         {
             _testEnum = value;
+            _testValuesList.Add(value);
             OnValueChanged("TestEnum", value);
         }
     }

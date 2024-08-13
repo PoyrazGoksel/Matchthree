@@ -9,5 +9,6 @@ namespace Events
         public UnityAction InputStart;
         public UnityAction InputStop;
         public UnityAction<int> MatchGroupDespawn;
+        public UnityAction PlayerMoved;
     }
 }
